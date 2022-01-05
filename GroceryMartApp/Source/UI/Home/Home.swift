@@ -12,8 +12,16 @@ struct Home: View {
 	let store: Store
 	
 	var body: some View {
-		List(store.products) { product in
-			ProductRow(product: product)
+		NavigationView {
+			List(store.products) { product in
+				NavigationLink(destination: Text("상세 정보")) {
+					ProductRow(product: product)
+				}
+				
+				// navigationTitle 은 네비게이션 뷰의 범위 바깥이 아닌 안쪽에 추가해야 함
+					.navigationTitle("Fruit Mart")
+			}
+			.listStyle(GroupedListStyle())
 		}
 	}
 }

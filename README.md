@@ -195,6 +195,43 @@ struct Home_Previews: PreviewProvider {
 }
 ```
 
+### 🔷 네비게이션 링크를 통한 화면 전환하기
+
+- 네비게이션 바 타이틀 및 네비게이션 링크를 통한 화면전환을 설정해 줍니다
+
+```swift
+// in Home.swift
+
+import SwiftUI
+
+struct Home: View {
+	// store 프로퍼티 추가
+	let store: Store
+
+	var body: some View {
+		NavigationView {
+			List(store.products) { product in
+				NavigationLink(destination: Text("상세 정보")) {
+					ProductRow(product: product)
+				}
+
+				// navigationTitle 은 네비게이션 뷰의 범위 바깥이 아닌 안쪽에 추가해야 함
+					.navigationTitle("Fruit Mart")
+			}
+			.listStyle(GroupedListStyle())
+		}
+	}
+}
+
+struct Home_Previews: PreviewProvider {
+	static var previews: some View {
+		Home(store: Store())
+	}
+}
+```
+
+<img width="300" alt="스크린샷 2022-01-04 오전 6 51 16" src="https://user-images.githubusercontent.com/28912774/148141880-b87e76b1-94e5-4740-b36c-b7b949fb6b32.gif">
+
 ---
 
 > Describing check point in details in Jacob's DevLog - https://jacobko.info/firebaseios/ios-firebase-03/
