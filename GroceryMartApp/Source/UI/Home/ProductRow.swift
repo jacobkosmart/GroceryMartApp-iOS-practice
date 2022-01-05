@@ -86,6 +86,10 @@ private extension ProductRow {
 
 struct ProductRow_Previews: PreviewProvider {
 	static var previews: some View {
-		ProductRow(product: productSamples[0])
+		VStack {
+			ProductRow(product: productSamples[0])
+			ProductRow(product: productSamples[1])
+			ProductRow(product: productSamples[2])
+		}
 	}
 }

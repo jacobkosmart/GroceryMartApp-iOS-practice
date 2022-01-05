@@ -1,4 +1,4 @@
-# 💊 drugAlert-iOS-practice
+# 🥬 GroceryMartApp-iOS-practice
 
 <!-- ! gif 스크린샷 -->
 
@@ -32,237 +32,170 @@
 ### 🔷 Model
 
 ```swift
-// in Alert.swift
 
-import Foundation
-
-struct Alert: Codable {
-	var id: String = UUID().uuidString
-	let date: Date
-	var isOn: Bool
-
-	// 시간을 형변환
-	var time: String {
-		let timeFormatter = DateFormatter()
-		timeFormatter.dateFormat = "hh:mm"
-		return timeFormatter.string(from: date)
-	}
-
-	// 날짜 값을 받아서 한국의 시간이 오전, 오후 인지 값을 받을 수 있음
-	var meridiem: String {
-		let meridiemFormatter = DateFormatter()
-		meridiemFormatter.dateFormat = "a"
-		meridiemFormatter.locale = Locale(identifier: "ko")
-		return meridiemFormatter.string(from: date)
-	}
-}
 ```
 
-### 🔷 Content 설정
+### 🔷 ProductRow Cell
 
-#### NotificationCenter 추가, 설정
-
-- Notification 을 관리하는 NotificationCenter 를 `AppDelegate.swift` 경로에 설정합니다
+- 상품의 image, title, description, price, fav btn 등 재사용 가능한 cell 을 만들어서 json 에서 해당 데이터를 받아와서 UI 에 표시 해 줍니다
 
 ```swift
-//  AppDelegate.swift
+struct ProductRow: View {
+	let product: Product
 
-import NotificationCenter
-
-@main
-class AppDelegate: UIResponder, UIApplicationDelegate {
-
-
-
-	func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-
-		// UserNotificationCenter delegate 생성
-		UNUserNotificationCenter.current().delegate = self
-		return true
-	}
-	....
-}
-
-// MARK: extension UserNotificationCenterDelegate
-extension AppDelegate: UNUserNotificationCenterDelegate {
-
-	// notificationCenter handling
-	func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
-		completionHandler([.banner, .list, .badge, .sound])
-	}
-	func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
-		completionHandler()
-	}
-}
-```
-
-#### User 에게 Notification 의 사용을 허가 여부를 묻기
-
-- 만약에 alert 의 대한 notification 을 허용하지 않으면, 권한이 없기 때문에 설정한 Notification 이 표시 되지 않기 때문에, 앱 실행 하고, Notification 을 사용할 수 있게 유저에게 권한을 허가 받는 코드를 넣어 줘야 함
-
-```swift
-//  AppDelegate.swift
-
-// UserNotification 권한을 묻기
-		let authorizationOptions = UNAuthorizationOptions(arrayLiteral: [.alert, .badge, .sound])
-		userNotificationCenter?.requestAuthorization(options: authorizationOptions) { _, error in
-			if let error = error {
-				print("ERROR: notification authrization request \(error.localizedDescription)")
-			}
+	var body: some View {
+		HStack {
+			productImage
+			productDescription
 		}
-```
-
-#### local Notification 생성
-
-- `AlertListViewController` 에서 알람 생성이 되고, alertList 에서 switch 가 켜질때 추가가 되야됨
-
-```swift
-//  UNNotificationCenter.swift
-
-import Foundation
-import UserNotifications
-
-extension UNUserNotificationCenter {
-
-	// alert 객체를 받아서 request 를 만들고, 최종적으로 notificationCenter 에 추가하는 method
-	func addNotificationRequest(by alert: Alert) {
-		let content = UNMutableNotificationContent()
-		content.title = "약 먹을 시간 이에요 💊"
-		content.body = "대한의사협회에서 권장되는 약 복용 시간은 식후 30분 후 입니다"
-		content.sound = .default
-		content.badge = 1 // 자동적으로 badge 가 사라지지는 않음
+		.frame(height: 150)
+		// cell 아래 테투리 그림자 처리:
+		// 1.뷰의 배경색을 불투명 색처리 - .background...
+		// 2.테두리 둥들게 처리
+		// 3. 해당 뷰에 shadow 처리
+		.background(Color.primary.colorInvert())
+		.cornerRadius(10)
+		.shadow(color: Color.primaryShadow, radius: 1, x: 2, y: 2)
+		.padding(8)
 	}
 }
-```
 
-#### 생성된 badge 삭제
+private extension ProductRow {
 
-- 위에서 badge 가 1로 생성되고 나서 사용자가 app 에 접속하면 자동으로 사라지는 것이 아니라, 수동으로 없애 줘야 합니다
-
-```swift
-//  SceneDelegate.swift
-
-func sceneDidBecomeActive(_ scene: UIScene) {
-	// 사용자가 app 을 열었는때 전송된 badge 를 0으로 설정해서 없애주기
-	UIApplication.shared.applicationIconBadgeNumber = 0
-}
-```
-
-### 🔷 Trigger 설정
-
-- local Notification 을 활성화 시키는, 즉 alert 을 발생시키는 조건인 Trigger 를 작성해 주어야 합니다
-
-```swift
-
-//  UNNotificationCenter.swift
-
-import Foundation
-import UserNotifications
-
-extension UNUserNotificationCenter {
-	.....
-		// trigger 에 사용되는 DateComponents 생성
-		let component = Calendar.current.dateComponents([.hour, .minute], from: alert.date)
-
-		// trigger 생성: UNCalendarNotificationTrigger ( 어떠한 date조건에 할것인지와 반복을 설정해 줍니다 - 스위치가 켜져 있는 동안만 계속 반복해서 사용함)
-		let trigger = UNCalendarNotificationTrigger(dateMatching: component, repeats: alert.isOn)
+	// 상품 이미지
+	var productImage: some View {
+		Image(product.imageName)
+			.resizable()
+			.scaledToFill()
+			.frame(width: 140)
+			.clipped()
 	}
-}
-```
 
-### 🔷 Request 설정
+	var productDescription: some View {
+		VStack(alignment: .leading) { // 정렬 기준 변경
+			// 상품명 부분에 작성
+			Text(product.name)
+				.font(.headline)
+				.fontWeight(.medium)
+				.padding(.bottom, 6)
 
-- contents 와 trigger 에서 만들어놓은 구성요소들을 NotificationCenter 에 추가 해줍니다
+			// 상품 설명 부분에 작성
+			Text(product.description)
+				.font(.footnote)
+				.foregroundColor(Color.secondaryText)
 
-```swift
-import UserNotifications
+			Spacer()
 
-extension UNUserNotificationCenter {
+			priceFavBtn
 
-	.....
-		// request 생성
-		let request = UNNotificationRequest(identifier: alert.id, content: content, trigger: trigger)
-		// UNUserNotificationCenter 에 추가 시키기
-		self.add(request, withCompletionHandler: nil)
-	}
-}
-```
-
-- 생성된 `addNotificationRequest` method 를 alert 이 발생하는 2곳에 추가 시킵니다
-
-👉 첫번째 : timePicker 로 새로운 알람이 생성 될때 경우
-
-```swift
-//  AlertListViewController.swift
-
-@IBAction func tapAddAlertBtn(_ sender: UIBarButtonItem) {
-.....
-// notification 추가 하기
-self.userNotificationCenter.addNotificationRequest(by: newAlert)
-
-......
-}
-```
-
-👉 두번째 : isOn 스위치가 true 일 경우
-
-```swift
-//  AlertListCell.swift
-
-	@IBAction func tabAlertSwitch(_ sender: UISwitch) {
-
-.......
-		// 처음에는 on상태이고, alertListViewController 에서 껏다가 다시 켠 경우에 추가 해줘야함
-		if sender.isOn {
-			userNotificationCenter.addNotificationRequest(by: alerts[sender.tag])
 		}
+		.padding([.leading, .bottom], 12)
+		.padding([.top, .trailing])
 	}
 
-```
+	var priceFavBtn: some View {
+		HStack (spacing: 0){ // HStack 이 가진 자식 뷰 사이의 간격을 0을 지정
+			// 가격 정보
+			Text("W").font(.footnote)
+			+ Text("\(product.price)").font(.headline)
 
-- NotificationCenter 에서 request 된거 삭제하기 (2군데)
+			Spacer()
 
-👉 첫번째 : alertListView 에서 스와이프 해서 삭제 하는 경우
+			// 하트아이콘 : asset 에 미리 포함한 peach 색 사용
+			Image(systemName: "heart")
+				.imageScale(.large)
+				.foregroundColor(Color("peach"))
+				.frame(width: 32, height: 32)
 
-```swift
-	// cell 이 edit 할때의 logic 추가 : .delete 삭제 일 경우에만
-	override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-		switch editingStyle {
-		case .delete:
-		.....
-			// 삭제 될때도 notificationCenter 에서 삭제 해줌: center 가 가지고 있는 request 중에서 남아있는 notification 요청 중(pending 상태) id에 해당되는 것만 삭제 한다는 것!
-			userNotificationCenter.removePendingNotificationRequests(withIdentifiers: [alerts[indexPath.row].id])
-			// tableView reload
-			self.tableView.reloadData()
-			return
-		default:
-			break
+			// 카트아이콘
+			Image(systemName: "cart")
+				.imageScale(.large)
+				.foregroundColor(Color.peach)
+				.frame(width: 32, height: 32)
 		}
 	}
 }
 
-```
-
-👉 두번째 : cell 의 switch 가 false 인 경우
-
-```swift
-//  AlertListCell.swift
-	// MARK: Actions
-	@IBAction func tabAlertSwitch(_ sender: UISwitch) {
-		guard let data = UserDefaults.standard.value(forKey: "alerts") as? Data,
-					var alerts = try? PropertyListDecoder().decode([Alert].self, from: data) else { return }
-
-		alerts[sender.tag].isOn = sender.isOn
-		UserDefaults.standard.set(try? PropertyListEncoder().encode(alerts), forKey: "alerts")
-
-		// 처음에는 on상태이고, alertListViewController 에서 껏다가 다시 켠 경우에 추가 해줘야함
-		if sender.isOn {
-			userNotificationCenter.addNotificationRequest(by: alerts[sender.tag])
-		} else { // sender.isOn 이 false 일때는 NotificationCenter 애서 request 삭제 해줘야함
-			userNotificationCenter.removePendingNotificationRequests(withIdentifiers: [alerts[sender.tag].id])
+struct ProductRow_Previews: PreviewProvider {
+	static var previews: some View {
+		VStack {
+			ProductRow(product: productSamples[0])
+			ProductRow(product: productSamples[1])
+			ProductRow(product: productSamples[2])
 		}
 	}
+}
 ```
+
+<img width="350" alt="스크린샷 2021-12-31 오후 7 17 00" src="https://user-images.githubusercontent.com/28912774/147817725-2f019547-f5be-4ddf-b45d-7dfbf430062b.png">
+
+### 🔷 리스트를 이용한 상품 목록 표시하기
+
+#### 👉 데이터 변화 하기
+
+```swift
+// in BundleExtension.swift
+
+// 파일명을 전달받으면 번들에 있는 파일로 접근해 JSON 구조의 데이터를 Foundation 프레임워크에서 사용할 수 있는 타입으로 변환하는 기능을 합니다
+extension Bundle {
+	func decode<T: Decodable>(filename: String, as type: T.Type) -> T {
+		guard let url = self.url(forResource: filename, withExtension: nil) else {
+			fatalError("번들에 \(filename)이 없습니다.")
+		}
+		guard let data = try? Data(contentsOf: url) else {
+			fatalError("\(url)로부터 데이터를 불러올 수 없습니다.")
+		}
+		guard let decodedData = try? JSONDecoder().decode(T.self, from: data) else {
+			fatalError("데이터 복호화에 실패했습니다")
+		}
+		return decodedData
+	}
+}
+```
+
+#### 👉 Store 모델 생성
+
+```swift
+// in Store.swift
+
+final class Store {
+	var products: [Product]
+
+	// Store 인스턴스가 생성될때 파일 이름을 다른 것으로 지정하지 않는다면, Bundle Extension 파일에서 작성한 기능을 이용해서
+	// ProductData.json 파일에 있는 데이터를 복호화하여 products 프로퍼티에 저장할 합니다
+	init(filename: String = "ProductData.json") {
+		self.products = Bundle.main.decode(filename: filename, as: [Product].self)
+	}
+}
+```
+
+#### 👉 상품 목록 표시하기
+
+- `Home.swift` 에서 store 프로퍼티를 추가하고 리스트를 이용해 각 상품들을 나열해 줍니다
+
+```swift
+// in Home.swift
+
+struct Home: View {
+	// store 프로퍼티 추가
+	let store: Store
+
+	var body: some View {
+		// List 의 ID 설정은 Product.swift 에서 id: UUID = UUID() identifiable 프로토콜 준수르르 위한 id 프로퍼티 추가
+		List(store.products) { product in
+			ProductRow(product: product)
+		}
+	}
+}
+
+struct Home_Previews: PreviewProvider {
+	static var previews: some View {
+		Home(store: Store())
+	}
+}
+```
+
+---
 
 > Describing check point in details in Jacob's DevLog - https://jacobko.info/firebaseios/ios-firebase-03/
 
@@ -289,5 +222,3 @@ self.userNotificationCenter.addNotificationRequest(by: newAlert)
 ## 🗃 Reference
 
 Jacob's DevLog - []()
-
-fastcampus - [https://fastcampus.co.kr/dev_online_iosappfinal](https://fastcampus.co.kr/dev_online_iosappfinal)
