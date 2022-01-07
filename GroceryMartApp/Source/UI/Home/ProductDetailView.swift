@@ -9,9 +9,12 @@ import SwiftUI
 
 struct ProductDetailView: View {
 	
+	// Store instance 생성
+	@EnvironmentObject private var store: Store
 	let product: Product // 상품 정보를 전달 받기 위한 프로퍼티 선언
 	
 	@State private var quantity: Int = 1
+	@State private var showingAlert: Bool = false
 	
 	var body: some View {
 		VStack(spacing: 0) {
@@ -20,6 +23,12 @@ struct ProductDetailView: View {
 		}
 		// Edge.Set 타입을 전달하여 기본적으로 뷰의 안전 영역(Safe Area) 를 무시하고 설정한 위치에 View 를 구성할 수 있음
 		.edgesIgnoringSafeArea(.top)
+		// alert 수식어 추가
+		.alert("주문확인",
+					 isPresented: $showingAlert,
+					 actions: { confirmAlert },
+					 message: { alertMessage }
+		)
 	}
 }
 
@@ -92,7 +101,9 @@ private extension ProductDetailView {
 	
 	// 주문하기 버튼
 	var placeOrderButton: some View {
-		Button(action: {}) {
+		Button(action: {
+			self.showingAlert = true // 주문하기 버튼을 눌렀을때 알림장 출력
+		}) {
 			Capsule()
 				.fill(Color.peach)
 			// 너비는 주어진 공간을 최대로 사용하고, 높이는 최소, 최대치 지정함
@@ -100,6 +111,21 @@ private extension ProductDetailView {
 				.overlay(Text("주문하기").font(.system(size: 20)).fontWeight(.medium).foregroundColor(Color.white))
 				.padding(.vertical, 30)
 		}
+	}
+	
+	// Alert Actions
+	var confirmAlert: some View {
+		HStack {
+			Button("취소", role: .cancel){}
+			Button("확인") {
+				// 확인 버튼 눌렀을때 동작하도록 구현
+				self.placeOrder()
+			}
+		}
+	}
+	// Alert message
+	var alertMessage: some View {
+		Text(splitText("\(product.name) 을(를) \(quantity) 개 구매하시겠습니까?"))
 	}
 	
 	// MARK: Computed Values
@@ -114,6 +140,12 @@ private extension ProductDetailView {
 		let lhsString = text[..<afterSpaceIdx].trimmingCharacters(in: .whitespaces)
 		let rhsString = text[afterSpaceIdx...].trimmingCharacters(in: .whitespaces)
 		return String(lhsString + "\n" + rhsString)
+	}
+	
+	// MARK: Action
+	// 상품과 수량 정보를 placeOrder 메서드에 인수로 전달
+	func placeOrder() {
+		store.placeOrder(product: product, quantity: quantity)
 	}
 	
 }
