@@ -68,11 +68,9 @@ private extension ProductRow {
 			
 			Spacer()
 			
-			// 하트아이콘 : asset 에 미리 포함한 peach 색 사용
-			Image(systemName: "heart")
-				.imageScale(.large)
-				.foregroundColor(Color("peach"))
-				.frame(width: 32, height: 32)
+			// 하트아이콘 : FavoriteButton 적용
+			FavoriteButton(product: product)
+		
 			
 			// 카트아이콘
 			Image(systemName: "cart")

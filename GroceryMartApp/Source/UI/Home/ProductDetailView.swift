@@ -63,10 +63,8 @@ private extension ProductDetailView {
 				
 				Spacer()
 				
-				Image(systemName: "heart") // 즐겨찾기 버튼
-					.imageScale(.large)
-					.foregroundColor(Color.peach)
-					.frame(width: 32, height: 32)
+				// 즐겨찾기 버튼 - 하트아이콘 : FavoriteButton 적용
+				FavoriteButton(product: product)
 			}
 			
 			Text(splitText(product.description)) // 상품설명

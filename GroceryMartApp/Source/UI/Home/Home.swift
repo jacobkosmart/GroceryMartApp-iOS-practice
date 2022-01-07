@@ -8,8 +8,8 @@
 import SwiftUI
 
 struct Home: View {
-	// store 프로퍼티 추가
-	let store: Store
+	// environment 객체 생성
+	@EnvironmentObject private var store: Store
 	
 	var body: some View {
 		NavigationView {
@@ -29,7 +29,9 @@ struct Home: View {
 
 struct Home_Previews: PreviewProvider {
 	static var previews: some View {
-		Home(store: Store())
+		// preview 는 Home 의 자식뷰에 속하지 않으므로 별개로 인스턴스를 만들어 줘야 함(Store 가 사용된 뷰는 instance 생성 해줘야 preview 가 작동함)
+		Home()
+			.environmentObject(Store())
 	}
 }
 

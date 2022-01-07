@@ -11,7 +11,8 @@ import SwiftUI
 struct GroceryMartAppApp: App {
 	var body: some Scene {
 		WindowGroup {
-			Home(store: Store())
+			Home()
+				.environmentObject(Store()) // 환경 객체 주입
 		}
 	}
 }

@@ -14,6 +14,10 @@ struct QuantitySelector: View {
 	// range: 수량 선택 가능 범위
 	var range: ClosedRange<Int> = 1...20
 	
+	// 햅틱 변수 생성(UIKit)
+	private let softFeedback = UIImpactFeedbackGenerator(style: .soft) // 부드러운 진동
+	private let rigidFeedback = UIImpactFeedbackGenerator(style: .rigid) // 딱딱한 진동
+	
 	var body: some View {
 		HStack {
 			// 수량 감소 버튼
@@ -49,6 +53,14 @@ struct QuantitySelector: View {
 		// 따라서 지정된 범위 (기본값 1 ~ 20) 내에 변경되는 경우에만 실제로 값이 반영됩니다
 		if range ~= quantity + num {
 			quantity += num
+			softFeedback.prepare() // 진동 지연 시간을 줄일 수 있도록 미리 준비시키는 method
+			// 수량을 변경했을 때 지정한 범위 내의 값이면 softFeedback 으로 부드러운 진동을 울리도록 함
+			// impactOccurred 메서드에서 진동의 세기를 0 ~ 1 사이로 진동의 세기를 조절 할 수 있음
+			softFeedback.impactOccurred(intensity: 0.8)
+		} else {
+			rigidFeedback.prepare()
+			// 변경된 수량이 지정한 범위를 벗어날 때, 즉 1 에서 - 누르거나 20에서 + 를 눌렀을 경우 더 강한 진동인 rigidFeedback 을 발생 시킵니다
+			rigidFeedback.impactOccurred()
 		}
 	}
 }

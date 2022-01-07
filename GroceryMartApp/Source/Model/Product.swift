@@ -19,6 +19,8 @@ struct Product {
 extension Product: Decodable{}
 // JSONDecoder 의 decode 메서드는 변환 타입이 반드시 Decodabble 프로토콜을 준수해야 하므로 Product 에 Decodable 프로토콜을 채택해야 합니다
 extension Product: Identifiable {}
+// Equatable 프로토콜을 준수하는 경우 이미 무엇을 비교해야 할지 판단할 수 있어서 firstIndex(of:) 와 같은 method 를 작성 할 수 있습니다
+extension Product: Equatable {}
 
 let productSamples = [
 	Product(name: "나는야 무화과", imageName: "fig", price: 3100, description: "소화가 잘되고 변비에 좋은 달달한 국내산 무화과에요. 고기와 찰떡궁합!"),
