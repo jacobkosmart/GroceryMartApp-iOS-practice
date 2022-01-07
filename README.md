@@ -4,7 +4,7 @@
 
 > SweetSwiftUI GitHub - https://github.com/giftbott/SweetSwiftUI
 
-![https://user-images.githubusercontent.com/21074282/78733721-31b66300-7981-11ea-84af-f5bc4fb7992d.png](https://user-images.githubusercontent.com/21074282/78733721-31b66300-7981-11ea-84af-f5bc4fb7992d.png)
+<img height="300" alt="스크린샷" src="https://user-images.githubusercontent.com/21074282/78733721-31b66300-7981-11ea-84af-f5bc4fb7992d.png">
 
 <!-- ! gif 스크린샷 -->
 
